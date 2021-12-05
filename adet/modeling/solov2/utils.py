@@ -1,7 +1,7 @@
 import cv2
 import torch
 import torch.nn.functional as F
-
+import numpy as np
 
 def _scale_size(size, scale):
     """Rescale a size by a ratio.
@@ -42,8 +42,23 @@ def imresize(img,
             `resized_img`.
     """
     h, w = img.shape[:2]
+    '''
     resized_img = cv2.resize(
         img, size, dst=out, interpolation=interp_codes[interpolation])
+    '''
+    if len(img.shape) == 2 or img.shape[2] <= 512:
+        resized_img = cv2.resize(
+            img, size, dst=out, interpolation=interp_codes[interpolation])
+    else:
+        if out is None:
+            out = np.ndarray(shape=(size[1], size[0], img.shape[2]), dtype=img.dtype)
+        for slice_a in range(0, img.shape[2], 512):
+            slice_b = min(slice_a + 512, img.shape[2])
+            cv2.resize(img[:, :, slice_a:slice_b], size,
+                       dst=out[:, :, slice_a:slice_b],
+                       interpolation=interp_codes[interpolation])
+        resized_img = out
+        
     if not return_scale:
         return resized_img
     else:
