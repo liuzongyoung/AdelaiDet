@@ -54,9 +54,14 @@ def imresize(img,
             out = np.ndarray(shape=(size[1], size[0], img.shape[2]), dtype=img.dtype)
         for slice_a in range(0, img.shape[2], 512):
             slice_b = min(slice_a + 512, img.shape[2])
-            cv2.resize(img[:, :, slice_a:slice_b], size,
-                       dst=out[:, :, slice_a:slice_b],
-                       interpolation=interp_codes[interpolation])
+            #cv2.resize(img[:, :, slice_a:slice_b], size,
+            #           dst=out[:, :, slice_a:slice_b],
+            #           interpolation=interp_codes[interpolation])
+            p = cv2.resize(img[:, :, slice_a:slice_b], size, interpolation=interp_codes[interpolation])
+            if len(p.shape) == 2:
+                p = p.reshape(p.shape[0], p.shape[1], 1)
+            out[:, :, slice_a:slice_b] = p
+
         resized_img = out
         
     if not return_scale:
